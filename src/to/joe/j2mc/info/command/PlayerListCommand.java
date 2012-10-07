@@ -19,68 +19,42 @@ public class PlayerListCommand extends MasterCommand {
 
     @Override
     public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
-        if (!sender.hasPermission("j2mc.core.admin")) {
-            int total = 0;
-            for(Player derp : plugin.getServer().getOnlinePlayers()){
-                if(!J2MC_Manager.getVisibility().isVanished(derp)){
-                    total++;
-                }
-            }
-            sender.sendMessage(ChatColor.AQUA + "Players (" + total + "/" + plugin.getServer().getMaxPlayers() + "):");
-            if (total == 0) {
-                sender.sendMessage(ChatColor.RED + "No one is online :(");
-                return;
-            }
-            StringBuilder builder = new StringBuilder();
-            for (Player pl : plugin.getServer().getOnlinePlayers()) {
-                if (!J2MC_Manager.getVisibility().isVanished(pl)) {
-                    String toAdd;
-                    toAdd = pl.getDisplayName();
-                    if(J2MC_Manager.getPermissions().hasFlag(pl.getName(), 'd')){
-                        toAdd = ChatColor.GOLD + pl.getName();
-                    }
-                    builder.append(toAdd + ChatColor.WHITE + ", ");
-                    if (builder.length() > 75) {
-                        builder.setLength(builder.length() - (toAdd + ChatColor.WHITE + ", ").length());
-                        sender.sendMessage(builder.toString());
-                        builder = new StringBuilder();
-                        builder.append(toAdd + ChatColor.WHITE + ", ");
-                    }
-                }
-            }
-            builder.setLength(builder.length() - 2);
-            sender.sendMessage(builder.toString());
-        } else {
-            sender.sendMessage(ChatColor.AQUA + "Players (" + plugin.getServer().getOnlinePlayers().length + "/" + plugin.getServer().getMaxPlayers() + "):");
-            if (plugin.getServer().getOnlinePlayers().length == 0) {
-                sender.sendMessage(ChatColor.RED + "No one is online :(");
-                return;
-            }
-            StringBuilder builder = new StringBuilder();
-            for (Player pl : plugin.getServer().getOnlinePlayers()) {
-                String toAdd = "";
-                toAdd = ChatColor.GREEN + pl.getName();
-                if(J2MC_Manager.getPermissions().hasFlag(pl.getName(), 't')){
-                    toAdd = ChatColor.DARK_GREEN + pl.getName();
-                }
-                if(J2MC_Manager.getPermissions().hasFlag(pl.getName(), 'd')){
-                    toAdd = ChatColor.GOLD + pl.getName();
-                }
-                if(pl.hasPermission("j2mc.chat.mute")){
-                    toAdd = ChatColor.YELLOW + pl.getName();
-                }
-                if(pl.hasPermission("j2mc.core.admin")){
-                    toAdd = ChatColor.RED + pl.getName();
-                }
-                if(J2MC_Manager.getVisibility().isVanished(pl)){
-                    toAdd = ChatColor.AQUA + pl.getName();
-                }
-                if(J2MC_Manager.getPermissions().hasFlag(pl.getName(), 'N')){
+        int total = 0;
+        for (Player p : plugin.getServer().getOnlinePlayers()) {
+            if (!isPlayer || player.canSee(p))
+                total++;
+        }
+        sender.sendMessage(ChatColor.AQUA + "Players (" + total + "/" + plugin.getServer().getMaxPlayers() + "):");
+        if (total == 0) {
+            sender.sendMessage(ChatColor.RED + "No one is online :(");
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (Player pl : plugin.getServer().getOnlinePlayers()) {
+            if (!isPlayer || player.canSee(pl)) {
+                String plName = pl.getName();
+                String toAdd = ChatColor.GREEN + plName;
+                //Set name color
+                if (sender.hasPermission("j2mc.fun.admin") && J2MC_Manager.getPermissions().hasFlag(plName, 't'))
+                    toAdd = ChatColor.DARK_GREEN + plName;
+                if (J2MC_Manager.getPermissions().hasFlag(plName, 'd'))
+                    toAdd = ChatColor.GOLD + plName;
+                if (sender.hasPermission("j2mc.chat.admin.mute") && pl.hasPermission("j2mc.chat.mute"))
+                    toAdd = ChatColor.YELLOW + plName;
+                if (sender.hasPermission("j2mc.core.admin") && pl.hasPermission("j2mc.core.admin"))
+                    toAdd = ChatColor.RED + plName;
+                if (J2MC_Manager.getVisibility().isVanished(pl))
+                    toAdd = ChatColor.AQUA + plName;
+                //Icons
+                if (sender.hasPermission("j2mc.chat.admin.nsa.toggle") && J2MC_Manager.getPermissions().hasFlag(plName, 'N'))
                     toAdd += ChatColor.DARK_AQUA + "\u00ab\u00bb";
-                }
-                if(J2MC_Manager.getPermissions().hasFlag(pl.getName(), 'k')){
-                    toAdd += ChatColor.RED + "&";
-                }
+                if (sender.hasPermission("j2mc.fun.admin") && J2MC_Manager.getPermissions().hasFlag(plName, 't'))
+                    toAdd += ChatColor.DARK_GREEN + "[T]";
+                if (sender.hasPermission("j2mc.chat.admin.mute") && pl.hasPermission("j2mc.chat.mute"))
+                    toAdd += ChatColor.YELLOW + "[M]";
+
                 builder.append(toAdd + ChatColor.WHITE + ", ");
                 if (builder.length() > 75) {
                     builder.setLength(builder.length() - (toAdd + ChatColor.WHITE + ", ").length());
@@ -93,5 +67,4 @@ public class PlayerListCommand extends MasterCommand {
             sender.sendMessage(builder.toString());
         }
     }
-
 }
